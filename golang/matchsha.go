@@ -2,7 +2,7 @@ package main
 
 // check sha sum 
 /*
-// roughly equivalent of the following bash script, except $3 interpret as file does not exist then it's assumed to be the expected shasum
+// roughly equivalent of the following bash script, except if $3 interpret as file does not exist then it's assumed to be the expected shasum
 match_sha(){
   target=$1
   alg=${2:-256}
