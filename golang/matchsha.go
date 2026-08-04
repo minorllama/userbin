@@ -1,0 +1,89 @@
+package main
+
+import (
+	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/hex"
+	"fmt"
+	"hash"
+	"io"
+	"os"
+	"strings"
+)
+
+func makeHasher(alg string) hash.Hash {
+	var hasher hash.Hash
+	switch alg {
+	case "256":
+		hasher = sha256.New()
+	case "512":
+		hasher = sha512.New()
+	default:
+		panic(fmt.Sprintf("unsupported: sha%s\n", alg))
+	}
+	return hasher
+}
+
+func matchSHA(target string, alg string, found string) {
+	if alg == "" {
+		alg = "256"
+	}
+	expectedFile := fmt.Sprintf("%s.sha%s", target, alg)
+	if found != "" {
+		expectedFile = found
+	}
+
+	hasher := makeHasher(alg)
+	targetFile, err := os.Open(target)
+	if err != nil {
+		fmt.Printf("'%s' not found\n", target)
+		return
+	}
+	defer targetFile.Close()
+
+	if _, err := io.Copy(hasher, targetFile); err != nil {
+		fmt.Printf("error reading '%s': %v\n", target, err)
+		return
+	}
+
+	computedDigest := hex.EncodeToString(hasher.Sum(nil))
+	computed := fmt.Sprintf("%s  %s", computedDigest, target)
+
+	var sha string
+	if _, err := os.Stat(expectedFile); err == nil {
+		content, err := os.ReadFile(expectedFile)
+		if err == nil {
+			sha = strings.TrimSpace(string(content))
+		}
+	} else {
+		sha = found
+	}
+
+	fmt.Println(computed)
+	fmt.Println(sha, expectedFile)
+	if found != "" {
+		fmt.Println(found == sha)
+	}
+}
+
+func orDefault(args []string, index int, defaultValue string) string {
+	if index < len(args) {
+		return args[index]
+	} else {
+		return defaultValue
+	}
+}
+
+func main() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		fmt.Println("Usage: program <target> [alg] [found]")
+		return
+	}
+
+	target := args[0]
+	alg := orDefault(args, 1, "256")
+	found := orDefault(args, 2, "")
+
+	matchSHA(target, alg, found)
+}
