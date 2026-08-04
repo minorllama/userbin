@@ -1,5 +1,21 @@
 package main
 
+// check sha sum 
+/*
+// roughly equivalent of the following bash script, except $3 interpret as file does not exist then it's assumed to be the expected shasum
+match_sha(){
+  target=$1
+  alg=${2:-256}
+  shafile=$1.$alg
+  computed=$(shasum -a $alg $target)
+  expectedfile=$target.sha"$alg"
+  found=${3:-$expectedfile} 
+  echo $expectedfile
+  cat $expectedfile
+  echo $computed
+}
+*/
+
 import (
 	"crypto/sha256"
 	"crypto/sha512"
@@ -77,7 +93,7 @@ func orDefault(args []string, index int, defaultValue string) string {
 func main() {
 	args := os.Args[1:]
 	if len(args) == 0 {
-		fmt.Println("Usage: program <target> [alg] [found]")
+		fmt.Println("\n\tmatchsha $file [alg] [found]")
 		return
 	}
 
