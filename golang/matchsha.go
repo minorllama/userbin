@@ -44,9 +44,9 @@ func matchSHA(target string, alg string, found string) {
 	if alg == "" {
 		alg = "256"
 	}
-	expectedFile := fmt.Sprintf("%s.sha%s", target, alg)
+	expectedSHAFile := fmt.Sprintf("%s.sha%s", target, alg)
 	if found != "" {
-		expectedFile = found
+		expectedSHAFile = found
 	}
 
 	hasher := makeHasher(alg)
@@ -63,11 +63,11 @@ func matchSHA(target string, alg string, found string) {
 	}
 
 	computedDigest := hex.EncodeToString(hasher.Sum(nil))
-	computed := fmt.Sprintf("%s  %s", computedDigest, target)
+	computed := fmt.Sprintf("%s  %s [computed]", computedDigest, target)
 
-	var sha string
-	if _, err := os.Stat(expectedFile); err == nil {
-		content, err := os.ReadFile(expectedFile)
+	sha := ""
+	if _, err := os.Stat(expectedSHAFile); err == nil {
+		content, err := os.ReadFile(expectedSHAFile)
 		if err == nil {
 			sha = strings.TrimSpace(string(content))
 		}
@@ -76,9 +76,9 @@ func matchSHA(target string, alg string, found string) {
 	}
 
 	fmt.Println(computed)
-	fmt.Println(sha, expectedFile)
-	if found != "" {
-		fmt.Println(found == sha)
+	fmt.Println(sha, expectedSHAFile)
+	if sha != "" {
+		fmt.Println(computedDigest == sha)
 	}
 }
 
